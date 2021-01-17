@@ -13,6 +13,11 @@ type Config struct {
 	addr      string
 	dump      string // dump filename
 	dumpLevel int    // dump level
+
+	filterHost string
+	filterUri  string
+	filterBody string
+	redisUri   string
 }
 
 func loadConfig() *Config {
@@ -21,6 +26,11 @@ func loadConfig() *Config {
 	flag.StringVar(&config.addr, "addr", ":9080", "proxy listen addr")
 	flag.StringVar(&config.dump, "dump", "", "dump filename")
 	flag.IntVar(&config.dumpLevel, "dump_level", 0, "dump level: 0 - header, 1 - header + body")
+
+	flag.StringVar(&config.filterHost, "host", "", "regex str for host")
+	flag.StringVar(&config.filterUri, "uri", "", "regex str for uri")
+	flag.StringVar(&config.filterBody, "ctpye", "", "regex str for content_type")
+	flag.StringVar(&config.redisUri, "redis", "", "")
 	flag.Parse()
 
 	return config
@@ -46,8 +56,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if config.dump != "" {
+	if config.dump == "dump" {
 		dumper := addon.NewDumper(config.dump, config.dumpLevel)
+		p.AddAddon(dumper)
+	}
+	if config.dump == "filter" {
+		dumper := addon.NewFilterDumper(config.filterHost, config.filterUri, config.filterBody, config.redisUri)
 		p.AddAddon(dumper)
 	}
 

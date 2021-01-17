@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	mock_conn "github.com/jordwest/mock-conn"
+	"github.com/jordwest/mock-conn"
 	"github.com/lqqyt2423/go-mitmproxy/cert"
 )
 
@@ -88,7 +88,7 @@ func (c *conn) Read(data []byte) (int, error) {
 
 	if !c.readDeadline.Equal(time.Time{}) {
 		if !c.readDeadline.After(time.Now()) {
-			return 0, os.ErrDeadlineExceeded
+			return 0, os.ErrNoDeadline
 		} else {
 			log.WithField("host", c.host).Warnf("c.readDeadline is future %v\n", c.readDeadline)
 			return 0, connUnexpected
@@ -121,7 +121,7 @@ func (c *conn) SetDeadline(t time.Time) error {
 func (c *conn) SetReadDeadline(t time.Time) error {
 	c.readDeadline = t
 	if c.pendingRead && !t.Equal(time.Time{}) && !t.After(time.Now()) {
-		c.readErrChan <- os.ErrDeadlineExceeded
+		c.readErrChan <- os.ErrNoDeadline
 	}
 	return nil
 }
